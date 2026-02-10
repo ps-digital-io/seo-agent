@@ -110,7 +110,7 @@ Built by Punkaj Saini, a digital marketing consultant with 20+ years of experien
 
 This tool uses AI to analyze websites and provide actionable SEO recommendations instantly.
 
-📧 punkaj.saini@psdigital.io  
+📧 punkaj@psdigital.io  
 🌐 [psdigital.io](https://psdigital.io)    
 💼 [LinkedIn](https://linkedin.com/in/punkaj)
 """)
