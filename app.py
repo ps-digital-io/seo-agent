@@ -4,6 +4,9 @@ import os
 import requests
 from bs4 import BeautifulSoup
 from dotenv import load_dotenv
+import gspread
+from google.oauth2.service_account import Credentials
+from datetime import datetime
 
 load_dotenv()
 api_key = os.getenv('ANTHROPIC_API_KEY')
@@ -11,9 +14,21 @@ client = anthropic.Anthropic(api_key=api_key)
 
 st.set_page_config(page_title="AI SEO Audit Tool", page_icon="🔍", layout="wide")
 
-st.title("🔍 AI-Powered SEO Audit Tool")
-st.markdown("**By Punkaj Saini | Digital Marketing Consultant**")
-st.markdown("---")
+def save_to_sheets(name, email, company, url):
+    try:
+        credentials = Credentials.from_service_account_info(
+            st.secrets["gcp_service_account"],
+            scopes=['https://www.googleapis.com/auth/spreadsheets', 'https://www.googleapis.com/auth/drive']
+        )
+        gc = gspread.authorize(credentials)
+        sheet = gc.open_by_key('1eilZ_xDiOukzIRRf-f_MHWHfUCA2Btrf16qEgT8jPEE').sheet1
+        
+        timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        sheet.append_row([timestamp, name, email, company, url])
+        return True
+    except Exception as e:
+        st.error(f"Error saving lead: {e}")
+        return False
 
 def fetch_page(url):
     try:
@@ -23,7 +38,7 @@ def fetch_page(url):
     except Exception as e:
         return None
 
-def analyze_seo(url):
+def analyze_seo(url, name, email, company):
     with st.spinner('Analyzing website... This may take 10-15 seconds'):
         html = fetch_page(url)
         
@@ -90,17 +105,37 @@ Format your response with clear headings and prioritize recommendations by impac
         st.markdown(message.content[0].text)
         
         st.markdown("---")
-        st.info("💡 Want a detailed audit with actionable implementation plan? [Contact Punkaj](mailto:punkaj.saini@gmail.com)")
+        st.info("💡 Want a detailed audit with actionable implementation plan? [Contact Punkaj](mailto:punkaj@psdigital.io)")
+
+st.title("🔍 AI-Powered SEO Audit Tool")
+st.markdown("**By Punkaj Saini | Digital Marketing Consultant**")
+st.markdown("Get instant, AI-powered SEO insights for your website")
+st.markdown("---")
 
 with st.form("audit_form"):
-    url_input = st.text_input("Enter Website URL", placeholder="https://example.com")
-    submit = st.form_submit_button("🚀 Run SEO Audit", use_container_width=True)
+    st.subheader("Enter Your Details")
     
-    if submit and url_input:
-        if not url_input.startswith(('http://', 'https://')):
+    col1, col2 = st.columns(2)
+    with col1:
+        name = st.text_input("Name *", placeholder="John Doe")
+        email = st.text_input("Email *", placeholder="john@company.com")
+    with col2:
+        company = st.text_input("Company (optional)", placeholder="Acme Inc")
+        url_input = st.text_input("Website URL *", placeholder="https://example.com")
+    
+    submit = st.form_submit_button("🚀 Run Free SEO Audit", use_container_width=True)
+    
+    if submit:
+        if not name or not email or not url_input:
+            st.error("Please fill in all required fields (Name, Email, Website URL)")
+        elif not url_input.startswith(('http://', 'https://')):
             st.error("Please enter a valid URL starting with http:// or https://")
         else:
-            analyze_seo(url_input)
+            if save_to_sheets(name, email, company, url_input):
+                analyze_seo(url_input, name, email, company)
+            else:
+                st.warning("Analysis will continue, but we couldn't save your details.")
+                analyze_seo(url_input, name, email, company)
 
 st.sidebar.title("About")
 st.sidebar.info("""
@@ -111,6 +146,6 @@ Built by Punkaj Saini, a digital marketing consultant with 20+ years of experien
 This tool uses AI to analyze websites and provide actionable SEO recommendations instantly.
 
 📧 punkaj@psdigital.io  
-🌐 [psdigital.io](https://psdigital.io)    
+🌐 [psdigital.io](https://psdigital.io)  
 💼 [LinkedIn](https://linkedin.com/in/punkaj)
 """)
