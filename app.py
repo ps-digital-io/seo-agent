@@ -540,9 +540,11 @@ This gives us access to your actual search queries, traffic data, and performanc
             # Save lead
             save_to_sheets(name, email, company, website_url, gsc_property or "Not provided", ga4_property_id or "Not provided")
             
+           # Initialize email sender
+            email_sender = EmailSender()
+
             # Send onboarding email if GSC/GA4 not provided
-            if not gsc_property or not ga4_property_id:
-                email_sender = EmailSender()
+                if not gsc_property or not ga4_property_id:
                 email_sender.send_onboarding_email(email, name, website_url, SERVICE_ACCOUNT_EMAIL)
                 st.info(f"📧 Sent setup instructions to {email}")
             
@@ -592,6 +594,13 @@ This gives us access to your actual search queries, traffic data, and performanc
                 st.markdown("---")
                 st.success("💡 **Want help implementing these recommendations?** Let's discuss your digital growth strategy.")
                 st.info("[Schedule a Call](mailto:punkaj@psdigital.io) | [LinkedIn](https://linkedin.com/in/punkaj)")
+
+                # Send audit complete email
+                try:
+                email_sender.send_audit_complete_email(email, name, website_url)
+                st.caption("✅ Audit summary sent to your email")
+                except:
+                pass  # Don't break if email fails
 
 st.sidebar.title("About")
 st.sidebar.info("""
