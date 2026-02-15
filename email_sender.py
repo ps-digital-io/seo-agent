@@ -1,7 +1,9 @@
 import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
+from email.mime.application import MIMEApplication
 import streamlit as st
+import os
 
 class EmailSender:
     def __init__(self):
@@ -55,7 +57,7 @@ STEP 2: Google Analytics 4 (2 minutes)
 
 ═══════════════════════════════════════
 
-Once you've completed both steps, reply to this email and we'll run your comprehensive audit within 24 hours!
+Once you've completed both steps, run the audit again at https://punkaj.streamlit.app/ and you'll get the full report with real data!
 
 Questions? Just reply to this email.
 
@@ -71,42 +73,61 @@ P.S. If you don't have access to GSC or GA4, no problem! We can still run a basi
         
         return self._send_email(recipient_email, subject, body)
     
-    def send_audit_complete_email(self, recipient_email, recipient_name, website_url, audit_link=None):
-        """Send notification when audit is complete"""
+    def send_audit_complete_email(self, recipient_email, recipient_name, website_url, pdf_path=None):
+        """Send notification when audit is complete with PDF attachment"""
         
-        subject = f"Your SEO Audit is Ready - {website_url}"
+        subject = f"Your SEO Audit Report is Ready - {website_url}"
         
         body = f"""
 Hi {recipient_name},
 
 Great news! Your comprehensive SEO audit for {website_url} is complete.
 
-"""
-        
-        if audit_link:
-            body += f"📊 View your audit: {audit_link}\n\n"
-        
-        body += f"""
+Please find your detailed audit report attached as a PDF.
+
 Your audit includes:
+✅ Overall SEO Score (0-100)
 ✅ Technical SEO analysis
-✅ On-page optimization recommendations  
+✅ On-page optimization review
 ✅ Content gap analysis
 ✅ Performance insights
 ✅ Google Search Console data (if connected)
 ✅ Google Analytics insights (if connected)
+✅ Prioritized recommendations with action items
 
-Want help implementing these recommendations? Let's schedule a call to discuss your digital growth strategy.
+═══════════════════════════════════════
+
+NEXT STEPS:
+
+I'd love to discuss how to implement these recommendations and create a 90-day roadmap for your digital growth.
+
+Schedule a free 30-minute strategy call:
+📧 Reply to this email
+💼 Connect on LinkedIn: linkedin.com/in/punkaj
+
+═══════════════════════════════════════
+
+Want ongoing SEO support? I offer:
+- SEO strategy & consulting
+- Content creation & optimization
+- Technical SEO implementation
+- Monthly monitoring & reporting
+- Digital marketing automation
+
+Let's talk about how I can help you achieve your growth goals.
 
 Best regards,
 {self.sender_name}
+SEO & Digital Marketing Consultant
+20+ Years Experience
 📧 {self.sender_email}
 🌐 psdigital.io
         """.strip()
         
-        return self._send_email(recipient_email, subject, body)
+        return self._send_email(recipient_email, subject, body, pdf_attachment=pdf_path)
     
-    def _send_email(self, recipient_email, subject, body):
-        """Internal method to send email via SMTP"""
+    def _send_email(self, recipient_email, subject, body, pdf_attachment=None):
+        """Internal method to send email via SMTP with optional PDF attachment"""
         try:
             # Create message
             message = MIMEMultipart()
@@ -116,6 +137,16 @@ Best regards,
             
             # Add body
             message.attach(MIMEText(body, "plain"))
+            
+            # Add PDF attachment if provided
+            if pdf_attachment and os.path.exists(pdf_attachment):
+                with open(pdf_attachment, "rb") as pdf_file:
+                    pdf_part = MIMEApplication(pdf_file.read(), _subtype="pdf")
+                    pdf_part.add_header(
+                        "Content-Disposition",
+                        f"attachment; filename={os.path.basename(pdf_attachment)}"
+                    )
+                    message.attach(pdf_part)
             
             # Send email
             with smtplib.SMTP(self.smtp_server, self.smtp_port) as server:
