@@ -10,4 +10,4 @@ google-auth-httplib2
 google-api-python-client
 google-analytics-data
 urllib3
-weasyprint
+xhtml2pdf
