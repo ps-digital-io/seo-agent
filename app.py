@@ -545,8 +545,8 @@ This gives us access to your actual search queries, traffic data, and performanc
 
             # Send onboarding email if GSC/GA4 not provided
                 if not gsc_property or not ga4_property_id:
-                email_sender.send_onboarding_email(email, name, website_url, SERVICE_ACCOUNT_EMAIL)
-                st.info(f"📧 Sent setup instructions to {email}")
+                    email_sender.send_onboarding_email(email, name, website_url, SERVICE_ACCOUNT_EMAIL)
+                    st.info(f"📧 Sent setup instructions to {email}")
             
             # Run audit
             all_pages_data, technical_findings, has_blog, gsc_data, ga4_data = comprehensive_audit(
