@@ -15,6 +15,7 @@ from urllib.parse import urljoin, urlparse
 from gsc_fetcher import GSCFetcher
 from ga4_fetcher import GA4Fetcher
 from email_sender import EmailSender
+from pdf_generator import PDFGenerator
 
 load_dotenv()
 api_key = os.getenv('ANTHROPIC_API_KEY')
@@ -591,16 +592,51 @@ This gives us access to your actual search queries, traffic data, and performanc
                 recommendations = generate_ai_recommendations(all_pages_data, technical_findings, has_blog, gsc_data, ga4_data)
                 st.markdown(recommendations)
                 
+st.markdown("---")
+                
+                # Generate PDF report
+                with st.spinner("📄 Generating PDF report..."):
+                    try:
+                        pdf_generator = PDFGenerator()
+                        client_data = {
+                            'name': name,
+                            'email': email,
+                            'company': company or '',
+                            'website': website_url
+                        }
+                        
+                        pdf_path = pdf_generator.generate_audit_pdf(
+                            client_data,
+                            all_pages_data,
+                            technical_findings,
+                            has_blog,
+                            gsc_data,
+                            ga4_data,
+                            recommendations
+                        )
+                        
+                        # Provide download button
+                        with open(pdf_path, "rb") as pdf_file:
+                            st.download_button(
+                                label="📥 Download PDF Report",
+                                data=pdf_file,
+                                file_name=os.path.basename(pdf_path),
+                                mime="application/pdf",
+                                use_container_width=True
+                            )
+                        
+                        # Send email with PDF
+                        email_sender.send_audit_complete_email(email, name, website_url, pdf_path)
+                        st.success("✅ PDF report generated and emailed to you!")
+                        
+                    except Exception as e:
+                        st.warning(f"⚠️ PDF generation failed: {e}")
+                        # Still send email without PDF
+                        email_sender.send_audit_complete_email(email, name, website_url)
+                
                 st.markdown("---")
                 st.success("💡 **Want help implementing these recommendations?** Let's discuss your digital growth strategy.")
                 st.info("[Schedule a Call](mailto:punkaj@psdigital.io) | [LinkedIn](https://linkedin.com/in/punkaj)")
-
-                # Send audit complete email
-                try:
-                    email_sender.send_audit_complete_email(email, name, website_url)
-                    st.caption("✅ Audit summary sent to your email")
-                except:
-                    pass  # Don't break if email fails
 
 st.sidebar.title("About")
 st.sidebar.info("""
