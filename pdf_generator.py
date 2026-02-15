@@ -1,4 +1,4 @@
-from weasyprint import HTML, CSS
+from xhtml2pdf import pisa
 from datetime import datetime
 import os
 import tempfile
@@ -681,7 +681,7 @@ class PDFGenerator:
         
         return html
     
-    def _html_to_pdf(self, html_content, website_name):
+def _html_to_pdf(self, html_content, website_name):
         """Convert HTML to PDF and return file path"""
         
         # Create temp file
@@ -690,7 +690,11 @@ class PDFGenerator:
         pdf_filename = f"SEO_Audit_{safe_name}_{datetime.now().strftime('%Y%m%d')}.pdf"
         pdf_path = os.path.join(temp_dir, pdf_filename)
         
-        # Generate PDF
-        HTML(string=html_content).write_pdf(pdf_path)
+        # Generate PDF using xhtml2pdf
+        with open(pdf_path, "wb") as pdf_file:
+            pisa_status = pisa.CreatePDF(html_content, dest=pdf_file)
+        
+        if pisa_status.err:
+            raise Exception(f"PDF generation failed with error code: {pisa_status.err}")
         
         return pdf_path
