@@ -597,10 +597,10 @@ This gives us access to your actual search queries, traffic data, and performanc
 
                 # Send audit complete email
                 try:
-                email_sender.send_audit_complete_email(email, name, website_url)
-                st.caption("✅ Audit summary sent to your email")
+                    email_sender.send_audit_complete_email(email, name, website_url)
+                    st.caption("✅ Audit summary sent to your email")
                 except:
-                pass  # Don't break if email fails
+                    pass  # Don't break if email fails
 
 st.sidebar.title("About")
 st.sidebar.info("""
