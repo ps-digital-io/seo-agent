@@ -592,8 +592,7 @@ This gives us access to your actual search queries, traffic data, and performanc
                 recommendations = generate_ai_recommendations(all_pages_data, technical_findings, has_blog, gsc_data, ga4_data)
                 st.markdown(recommendations)
                 
-st.markdown("---")
-                
+                st.markdown("---")
                 # Generate PDF report
                 with st.spinner("📄 Generating PDF report..."):
                     try:
